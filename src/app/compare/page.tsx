@@ -17,7 +17,6 @@ export default function Component() {
   const [recordedVideoUrl, setRecordedVideoUrl] = useState(null);
 
 
-  
 
   function handleRecordingButton(){
     if (isRecording){
@@ -32,7 +31,7 @@ export default function Component() {
     }
   }
   function startRecording(){
-    if (!demoRef.current)
+    if (!demoRef.current || !mediaRecorderRef.current )
     {
       alert("something went wrong please try again later ");
       return ; 
@@ -40,6 +39,22 @@ export default function Component() {
     demoRef.current.currentTime =0;
     demoRef.current.play();
     setIsRecording(true);
+
+    
+    mediaRecorderRef.current.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        setRecordedChunks((prev) => [...prev, event.data]);
+      }
+    };
+
+    mediaRecorderRef.current.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const videoUrl = URL.createObjectURL(blob);
+      localStorage.setItem('recordedVideo', videoUrl);
+      setRecordedVideoUrl(videoUrl);
+      setRecordedChunks([]);
+    };
+    
   }
   function stopRecording(){
     if (!demoRef.current)
@@ -49,9 +64,13 @@ export default function Component() {
     }
     
     demoRef.current.pause();
+    
     // demoRef.current.currentTime =0;
     setIsRecording(false);
     setIsRecordingSaved(true);
+
+    mediaRecorderRef.current.ondataavailable=function (){};
+    mediaRecorderRef.current.stop();
   }
   function reRecording(){
     // clear previous Recording first 
@@ -60,8 +79,25 @@ export default function Component() {
   }
   function previewRecording(){
 
+    if (!userVideoRef.current || !localStorage.getItem("recordedVideo"))
+    return;
+
+    userVideoRef.current.srcObject = null ;
+    userVideoRef.current.src = localStorage.getItem("recordedVideo");
+    userVideoRef.current.load();
+    userVideoRef.current.play();
+
+    console.log(userVideoRef.current.src);
   }
 
+  useEffect(()=>{
+    if (!userVideoRef.current)
+    return ;
+    navigator.mediaDevices.getUserMedia({ video: true }).then((stream)=>{
+      userVideoRef.current.srcObject= stream;
+      mediaRecorderRef.current = new MediaRecorder(stream);
+    })
+  },[])
 
   return (
     <main className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
@@ -80,7 +116,7 @@ export default function Component() {
         <button onClick={handleRecordingButton} className="inline-flex items-center justify-center h-10 px-5 text-sm font-medium text-white bg-green-600 rounded-md shadow-md hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500">
           { isRecording  ?  "Stop Recording " : isRecordingSaved ? "ReRecord" : "Start Recording"}
         </button>
-        <button disabled={isRecording || !isRecordingSaved}   className="inline-flex items-center justify-center h-10 px-5 text-sm font-medium text-white bg-red-600 rounded-md shadow-md hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500">
+        <button disabled={isRecording || !isRecordingSaved} onClick={previewRecording}  className="inline-flex items-center justify-center h-10 px-5 text-sm font-medium text-white bg-red-600 rounded-md shadow-md hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500">
           Play Recorded Video
         </button>
         {/* <button className="inline-flex items-center justify-center h-10 px-5 text-sm font-medium text-white bg-yellow-400 rounded-md shadow-md hover:bg-yellow-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-500">

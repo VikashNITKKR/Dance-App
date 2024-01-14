@@ -7,11 +7,11 @@ export default function Component() {
       <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-5xl">
         <div className="w-full aspect-w-16 aspect-h-9">
           {/* <span className="w-full h-full object-cover shadow-md rounded-md bg-muted" /> */}
-          <video src="../../../public/dance.mp4" className="w-full aspect-video rounded-md bg-muted" controls ></video>
+          <video src="dance.mp4" className="w-full aspect-video rounded-md bg-muted" controls ></video>
         </div>
         <div className="w-full aspect-w-16 aspect-h-9">
           {/* <span className="w-full h-full object-cover shadow-md rounded-md bg-muted" /> */}
-          <video src="../../../public/dance.mp4" className="w-full aspect-video rounded-md bg-muted" controls ></video>
+          <video src="dance.mp4" className="w-full aspect-video rounded-md bg-muted" controls ></video>
         </div>
       </div>
       <div className="mt-8">
