@@ -1,61 +1,63 @@
-"use client"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+"use client";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 
 export default function Component() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isPlaying , setIsPlaying] = useState(false);
-  
-  
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const handleRestartClick = () => {
     // Check if the video ref exists
     if (videoRef.current) {
-      videoRef.current.currentTime =0;
+      videoRef.current.currentTime = 0;
       setIsPlaying(true);
       videoRef.current.play();
     }
   };
-  useEffect(()=>{
-    if (videoRef.current){
-      videoRef.current.onended = ()=>{
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.onended = () => {
         setIsPlaying(false);
-      }
+      };
     }
-  },[videoRef])
+  }, [videoRef]);
   const handlePlayClick = () => {
     // Check if the video ref exists
     if (videoRef.current) {
-      if(isPlaying){
+      if (isPlaying) {
         videoRef.current.pause();
         setIsPlaying(false);
-      }
-      else {
+      } else {
         videoRef.current.play();
         setIsPlaying(true);
       }
-      
     }
   };
+  //mayank
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="rounded-xl overflow-hidden max-w-2xl w-full">
-        <video ref={videoRef} src="dance.mp4" className="w-full aspect-video rounded-md bg-muted"  ></video>
+        <video
+          ref={videoRef}
+          src="dance.mp4"
+          className="w-full aspect-video rounded-md bg-muted"
+        ></video>
       </div>
       <div className="flex justify-center mt-10 gap-4">
         <Button className="bg-green-500" onClick={handlePlayClick}>
           {/* <Link className="text-white no-underline" href="#"> */}
-            {isPlaying ? " Pause " : " Play "}
+          {isPlaying ? " Pause " : " Play "}
           {/* </Link> */}
         </Button>
         {/* <Button className="bg-yellow-400" onClick={handlePauseClick} > */}
-          {/* <Link className="text-white no-underline" href="#"> */}
-            {/* Pause */}
-          {/* </Link> */}
+        {/* <Link className="text-white no-underline" href="#"> */}
+        {/* Pause */}
+        {/* </Link> */}
         {/* </Button> */}
         <Button className="bg-red-500" onClick={handleRestartClick}>
           {/* <Link className="text-white no-underline" href="#"> */}
-            Restart
+          Restart
           {/* </Link> */}
         </Button>
       </div>
@@ -67,9 +69,5 @@ export default function Component() {
         </Button>
       </div>
     </div>
-  )
+  );
 }
-
-
-
-
