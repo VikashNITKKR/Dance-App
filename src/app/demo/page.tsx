@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
+import RecordView from "@/components/videoRecorder";
 
 export default function Component() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const userVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const handleRestartClick = () => {
     // Check if the video ref exists
@@ -15,6 +17,7 @@ export default function Component() {
       videoRef.current.play();
     }
   };
+
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.onended = () => {
@@ -34,7 +37,13 @@ export default function Component() {
       }
     }
   };
-  //mayank
+
+  navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+    userVideoRef.current.srcObject = stream;
+  });
+
+  const [showpreview, setShowPreview] = useState(true);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="rounded-xl overflow-hidden max-w-2xl w-full">
@@ -43,7 +52,16 @@ export default function Component() {
           src="dance.mp4"
           className="w-full aspect-video rounded-md bg-muted"
         ></video>
+        {showpreview ? (
+          <video
+            ref={userVideoRef}
+            className="w-full aspect-video rounded-md bg-muted"
+            autoPlay
+            typeof="video/webm"
+          ></video>
+        ) : null}
       </div>
+      <RecordView showPreview={showpreview} setShowPreview={setShowPreview} />
       <div className="flex justify-center mt-10 gap-4">
         <Button className="bg-green-500" onClick={handlePlayClick}>
           {/* <Link className="text-white no-underline" href="#"> */}
