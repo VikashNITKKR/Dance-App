@@ -1,21 +1,26 @@
 "use client"
 import { Button } from "@/components/ui/button";
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState , Dispatch, SetStateAction } from "react"
 import { useReactMediaRecorder , ReactMediaRecorder} from "react-media-recorder";
+import RecordView from "@/utils/helper";
 
 export default function Component() {
 
+  const { status, startRecording : startRec, stopRecording : stopRec, mediaBlobUrl , clearBlobUrl  } = useReactMediaRecorder({ video: true });
+
   const [isRecording , setIsRecording] = useState(false);
   const [isRecordingSaved , setIsRecordingSaved] = useState(false);
+  const [liveStream, setLiveStream] = useState<any>(null);
 
   const demoRef = useRef<HTMLVideoElement |null>(null);
   const userVideoRef = useRef<HTMLVideoElement |null>(null);
 
-  const mediaRecorderRef = useRef(null);
+  
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [recordedVideoUrl, setRecordedVideoUrl] = useState(null);
 
+  const recordedRef = useRef<HTMLVideoElement |null>(null);
 
 
   function handleRecordingButton(){
@@ -27,11 +32,12 @@ export default function Component() {
       reRecording();
     }
     else {
+
       startRecording();
     }
   }
   function startRecording(){
-    if (!demoRef.current || !mediaRecorderRef.current )
+    if (!demoRef.current  )
     {
       alert("something went wrong please try again later ");
       return ; 
@@ -40,20 +46,7 @@ export default function Component() {
     demoRef.current.play();
     setIsRecording(true);
 
-    
-    mediaRecorderRef.current.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        setRecordedChunks((prev) => [...prev, event.data]);
-      }
-    };
-
-    mediaRecorderRef.current.onstop = () => {
-      const blob = new Blob(recordedChunks, { type: 'video/webm' });
-      const videoUrl = URL.createObjectURL(blob);
-      localStorage.setItem('recordedVideo', videoUrl);
-      setRecordedVideoUrl(videoUrl);
-      setRecordedChunks([]);
-    };
+    startRec();
     
   }
   function stopRecording(){
@@ -69,25 +62,22 @@ export default function Component() {
     setIsRecording(false);
     setIsRecordingSaved(true);
 
-    mediaRecorderRef.current.ondataavailable=function (){};
-    mediaRecorderRef.current.stop();
+    stopRec();
   }
   function reRecording(){
     // clear previous Recording first 
-    startRecording();
-    
+    // startRecording();
+    clearBlobUrl();
+    setIsRecordingSaved(false);
+    userVideoRef.current.src = null ; 
+    userVideoRef.current.srcObject = liveStream; 
+
   }
   function previewRecording(){
-
-    if (!userVideoRef.current || !localStorage.getItem("recordedVideo"))
-    return;
-
-    userVideoRef.current.srcObject = null ;
-    userVideoRef.current.src = localStorage.getItem("recordedVideo");
-    userVideoRef.current.load();
+    console.log("preview");
+    userVideoRef.current.srcObject = null;
+    userVideoRef.current.src = mediaBlobUrl;
     userVideoRef.current.play();
-
-    console.log(userVideoRef.current.src);
   }
 
   useEffect(()=>{
@@ -95,7 +85,8 @@ export default function Component() {
     return ;
     navigator.mediaDevices.getUserMedia({ video: true }).then((stream)=>{
       userVideoRef.current.srcObject= stream;
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      setLiveStream(stream);
+      
     })
   },[])
 
@@ -108,7 +99,10 @@ export default function Component() {
         </div>
         <div className="w-full aspect-w-16 aspect-h-9">
           {/* <span className="w-full h-full object-cover shadow-md rounded-md bg-muted" /> */}
+          {/* { !isRecordingSaved ? <video ref={userVideoRef}  className="w-full aspect-video rounded-md bg-muted" autoPlay typeof="video/webm" ></video>: */}
           <video ref={userVideoRef}  className="w-full aspect-video rounded-md bg-muted" autoPlay typeof="video/webm" ></video>
+          {/* } */}
+          {/* <RecordView  showPreview={showPreview} setShowPreview={setShowPreview} /> */}
           
         </div>
       </div>
@@ -130,7 +124,7 @@ export default function Component() {
         >
           Continue
         </Link> : 
-        <Button  onClick={()=>{if(isRecording) alert("Please Stop the Recording first"); }}
+        <Button  onClick={()=>{if(isRecording ) alert("Please Stop the Recording first"); }}
           className="inline-flex items-center justify-center h-10 px-5 text-sm font-medium text-white bg-blue-600 rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
         >
           Continue
